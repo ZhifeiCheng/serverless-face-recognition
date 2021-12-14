@@ -9,14 +9,18 @@ RUN $PIP_INSTALL numpy cython
 # RUN $PIP_INSTALL onnxruntime==1.9.0
 
 COPY requirements.txt  .
-RUN  pip3 --no-cache-dir install -r requirements.txt
+RUN  pip3 --no-cache-dir install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
-RUN python -c "from insightface.utils import download;download('models', 'buffalo_m', root='/app/.insightface')"
+RUN echo `PWD`
+RUN python -c "from insightface.utils import download;download('models', 'buffalo_m', root='./.insightface')"
 
-COPY ecs /app/
-COPY common /app/
-COPY data /app/data
-EXPOSE 10086
+# Copy function code
+COPY lambda/app.py ${LAMBDA_TASK_ROOT}
+COPY lambda/dao.py ${LAMBDA_TASK_ROOT}
+COPY lambda/face_detection.py ${LAMBDA_TASK_ROOT}
+COPY lambda/face_match.py ${LAMBDA_TASK_ROOT}
+COPY lambda/face_recognition.py ${LAMBDA_TASK_ROOT}
+COPY data ${LAMBDA_TASK_ROOT}/data
+
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
-WORKDIR /app
-ENTRYPOINT [ "python", "-m","face_recognition_server" ]
+CMD [ "app.handler" ]
