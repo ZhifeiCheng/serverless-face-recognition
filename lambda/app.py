@@ -8,7 +8,7 @@ LastEditTime: 2021-12-13 21:41:21
 """
 
 import json
-
+import time
 from common.dao import fetch_img
 from common.integration import integrated_face_recog_process
 
@@ -22,7 +22,9 @@ from common.integration import integrated_face_recog_process
 
 
 def handler(event, context):
+    start_time = time.time()
     img_url = event['img_url']
     img = fetch_img(img_url)
-    matched_res = integrated_face_recog_process(img)
-    return json.dumps(matched_res, ensure_ascii=False)
+    integrated_face_recog_process(img)
+    end_time = time.time()
+    return json.dumps({"duration": end_time - start_time}, ensure_ascii=False)
